@@ -1,6 +1,7 @@
 import json
 from ortools.sat.python import cp_model
 import time
+import graphviz
 
 # WARNING: Runtime can be ~30 minutes
 
@@ -184,7 +185,6 @@ e = time.time()
 
 print(f"Solved in {e - s:.2f} seconds")
     
-import graphviz
 def draw_graph_with_edges(graph, edges):
     dot = graphviz.Graph()
     for node in graph:
@@ -201,10 +201,8 @@ def draw_graph_with_edges(graph, edges):
     
     # use faster engine
     dot.render('graph_with_edges', format='png', cleanup=True, engine='neato')
-    
-    
+     
 draw_graph_with_edges(graph, all_edges.keys())
-
 
 # Print some stats about each connection
 for port_name, (port_x, port_y) in ports.items():
