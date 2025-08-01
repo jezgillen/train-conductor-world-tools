@@ -161,6 +161,7 @@ for edge in all_edges_undirected:
     
 
 # add constraints to global layer to ensure that each node has max 3 adjacent edge vars active
+node_active_indicators = []
 for node in all_nodes:
     # get all edges that are incident to this node
     incident_edges = [edge for edge in all_edges_global_undirected if node in edge]
@@ -169,10 +170,16 @@ for node in all_nodes:
     # add constraint that at most 3 of these variables can be True
     model.add(sum(incident_edge_vars) <= 3)
     
+    node_active_indicator = model.new_bool_var(f"node_active_{node}")
+    model.add(sum(incident_edge_vars) > 0).only_enforce_if(node_active_indicator)
+    model.add(sum(incident_edge_vars) == 0).only_enforce_if(~node_active_indicator)
+    node_active_indicators.append(node_active_indicator)
+    
 sum_individual_distances = sum(sum(all_edges_by_layer[key].values()) for key in all_edges_by_layer)
 
 # first minimize individual distances, then minimize the total number of rail tiles.
-model.minimize(sum(all_edges_global_undirected.values())+ 1000*sum_individual_distances)
+#model.minimize(sum(all_edges_global_undirected.values())+ 1000*sum_individual_distances)
+model.minimize(sum(node_active_indicators) + 1000 * sum_individual_distances)
 
 solver = cp_model.CpSolver()
 #print debugging information
