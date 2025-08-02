@@ -212,7 +212,7 @@ def draw_graph_with_edges(graph, edges):
         dot.edge(str(edge[0]), str(edge[1]), color='black' if solver.value(all_edges_global_undirected[frozenset(edge)]) > 0.5 else 'white')
     
     # use faster engine
-    dot.render('graph_with_edges', format='png', cleanup=True, engine='neato')
+    dot.render('graph_with_edges', directory=this_dir, format='png', cleanup=True, engine='neato')
      
 draw_graph_with_edges(graph, all_edges.keys())
 
