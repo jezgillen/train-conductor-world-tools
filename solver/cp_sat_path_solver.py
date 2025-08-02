@@ -2,6 +2,7 @@ import json
 from ortools.sat.python import cp_model
 import time
 import graphviz
+import os
 
 # WARNING: Runtime can be ~30 minutes
 
@@ -37,7 +38,8 @@ for node in graph:
 all_nodes = list(graph.keys())
 
 # get all ports and cities
-with open('../data/tiles.json') as f:
+this_dir = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(this_dir, '../data/tiles.json')) as f:
     tiles = json.load(f)
         
 def manhattan_distance(node1, node2):
@@ -170,11 +172,14 @@ for node in all_nodes:
     # add constraint that at most 3 of these variables can be True
     model.add(sum(incident_edge_vars) <= 3)
     
-    node_active_indicator = model.new_bool_var(f"node_active_{node}")
-    model.add(sum(incident_edge_vars) > 0).only_enforce_if(node_active_indicator)
-    model.add(sum(incident_edge_vars) == 0).only_enforce_if(~node_active_indicator)
-    node_active_indicators.append(node_active_indicator)
+    # check whether a new track tile is used here
+    if node not in ports.values() and node not in cities.values():
+        node_active_indicator = model.new_bool_var(f"node_active_{node}")
+        model.add(sum(incident_edge_vars) > 0).only_enforce_if(node_active_indicator)
+        model.add(sum(incident_edge_vars) == 0).only_enforce_if(~node_active_indicator)
+        node_active_indicators.append(node_active_indicator)
     
+# use graph distance for the individual distances
 sum_individual_distances = sum(sum(all_edges_by_layer[key].values()) for key in all_edges_by_layer)
 
 # first minimize individual distances, then minimize the total number of rail tiles.
